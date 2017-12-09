@@ -11,4 +11,5 @@
 # mechanism when boot stratping itself
 .source "$(dirname "${BASH_SOURCE[0]}")"/override/composer.include.sh 
 #compose specified component
+set -x
 includes_compose "$1"
