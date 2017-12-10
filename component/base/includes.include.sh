@@ -33,10 +33,10 @@
 includes_compose(){
 	local -r parentPath="$1"
 	# always deep dive base includibles before processing overrides
-	includes_visit "$parentPath" 'base'
-	includes_visit "$parentPath" 'override'
+	incudes__visit "$parentPath" 'base'
+	incudes__visit "$parentPath" 'override'
 }
-includes_visit(){
+incudes__visit(){
 	local -r parentPath="$1"
 	local -r branch="$2"
 	local subDir
@@ -48,9 +48,9 @@ includes_visit(){
 		includes_compose "$subDir"
 	done
 	# one or more elemental components (include files) may exist in the $branch directory
-	includes_filepath_echo "$parentPath/$branch"
+	incudes__filepath_echo "$parentPath/$branch"
 }
-includes_filepath_echo(){
+incudes__filepath_echo(){
 	local -r includePath="$1"
 	local incDir
 	for incDir in $(ls "$includePath/"*.include.sh 2>/dev/null); do
