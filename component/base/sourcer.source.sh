@@ -30,13 +30,13 @@
 #		directly into a component's base or override directories.
 #
 ###############################################################################
-includer_compose(){
+sourcer_compose(){
 	local -r parentPath="$1"
 	# always deep dive base includibles before processing overrides
-	includer__visit "$parentPath" 'base'
-	includer__visit "$parentPath" 'override'
+	sourcer__visit "$parentPath" 'base'
+	sourcer__visit "$parentPath" 'override'
 }
-includer__visit(){
+sourcer__visit(){
 	local -r parentPath="$1"
 	local -r branch="$2"
 	local subDir
@@ -45,15 +45,15 @@ includer__visit(){
 		# should never be */$branch/$branch/* - must have interviening component name: */$branch/<componentname>/$branch/*
 		if [ "$(basename "$subDir")" = "$branch" ]; then continue; fi
 		# deeply dive into any immediate composite components 
-		includer_compose "$subDir"
+		sourcer_compose "$subDir"
 	done
-	# one or more elemental components (include files) may exist in the $branch directory
-	includer__filepath_echo "$parentPath/$branch"
+	# one or more elemental components (source files) may exist in the $branch directory
+	sourcer__filepath_echo "$parentPath/$branch"
 }
-includer__filepath_echo(){
-	local -r includePath="$1"
+sourcer__filepath_echo(){
+	local -r sourcePath="$1"
 	local incDir
-	for incDir in $(ls "$includePath/"*.include.sh 2>/dev/null); do
+	for incDir in $(ls "$sourcePath/"*.source.sh 2>/dev/null); do
 		echo "$incDir"
 	done
 }
