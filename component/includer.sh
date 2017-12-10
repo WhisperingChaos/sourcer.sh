@@ -9,7 +9,6 @@
 
 # compose myself references override to permit overrides for itself via different
 # mechanism when boot stratping itself
-.source "$(dirname "${BASH_SOURCE[0]}")"/override/composer.include.sh 
+source "$(dirname "${BASH_SOURCE[0]}")"/override/includes.include.sh 
 #compose specified component
-set -x
 includes_compose "$1"
