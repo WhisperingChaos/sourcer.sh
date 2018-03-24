@@ -29,6 +29,9 @@
 #		In situations involving elemental includibles, they can be deposited
 #		directly into a component's base or override directories.
 #
+#	Conventions
+#		https://github.com/WhisperingChaos/SOLID_Bash
+#
 ###############################################################################
 sourcer_compose(){
 	local -r parentPath="$1"
