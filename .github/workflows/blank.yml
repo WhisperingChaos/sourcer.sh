@@ -1,0 +1,17 @@
+name: CI
+
+on: [push]
+
+jobs:
+  test:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Configure Test Environment
+      run: cd test; ./config.sh;
+    - name: Test sourcer.source.sh
+      run: cd test; ./sourcer.source_test.sh
+    - name: Test sourcer.build.source.sh
+      run: cd test; ./sourcer.build.source_test.sh
