@@ -46,8 +46,11 @@ Error: Unable to locate initial '$sourcer__BASE_DIR_NAME' source directory: '$so
 SOURCER__BUILD_SOURCE_NOEXIST
 }
 
-
-sourcer__build_funcvar_regex(){
+# This function permits adapting (overridding) the regex expressions used during
+# the scanning process.  Presents another way of overridding objects without
+# having to include them as global variables in a unique namespace.
+sourcer__build_funcvar_exception_pipe(){
+	local -r sourceFlPth="$1"
 
 	# notice extra grouping "()" operators - allows 3 more groups before identifier
 	# in overriding regex before its necessary to change function that uses these
@@ -55,17 +58,22 @@ sourcer__build_funcvar_regex(){
 	local -r funcRegex='^(function[[:space:]]+)*(((([_[:alnum:]]+))))[[:space:]]*\(\).*$'
 	local -r varNameRegex='[_\.[:alnum:]]+'
 	local -r glbVarDeclareRegex='^((declare[[:space:]].+[[:space:]]+)|(declare[[:space:]]+))(((('"$varNameRegex"'))))=.*$'
-	local -r glbVarDeclaregRegex='[[:space:]].+((declare[[:space:]].+[[:space:]]+)|(declare[[:space:]]+))(((('"$varNameRegex"'))))=.*$'
+#TODO - determine if really necessary to scan for global definitions that are
+# likely defined within a function.  Therefore, their existance is dynamic,
+# as these definitions most likely won't appear until long after the completion
+# of component composition, if at all...
+#	local -r glbVarDeclaregxRegex='[[:space:]].+((declare[[:space:]](-[gx.]|.+)[[:space:]]+)|(declare[[:space:]]+))(((('"$varNameRegex"'))))=.*$'
 	local -r glbVarExportRegex='^((export[[:space:]].+[[:space:]]+)|(export[[:space:]]+))(((('"$varNameRegex"'))))=.*$'
 	local -r glbVarRegex='^(((('"$varNameRegex"'))))=.*$'
+
+	sourcer__build_funcvar_exception_pipe_pipe "$sourceFlPth"
 }
 
 
-sourcer__build_funcvar_exception_pipe(){
+sourcer__build_funcvar_exception_pipe_pipe(){
 	local -r sourceFlPth="$1"
-	sourcer__build_funcvar_RegEx
 
-	if [ "$sourcer__BASE_DIR_NAME" = "$(basename "$(dirname "$sourceFlPth")")" ]; then
+	if [[ "$sourcer__BASE_DIR_NAME" != "$(basename "$(dirname "$sourceFlPth")")" ]]; then
 		local -r shouldExist='true'
 	else
 		local -r shouldExist='false'
@@ -75,7 +83,6 @@ sourcer__build_funcvar_exception_pipe(){
 	local pipeOption	
 	sourcer__pipe_option_save 'pipeOption'
 	set -o pipefail
-
 	cat $sourceFlPth 	                                                    \
 	| sed  -rn                                                            \
 			-e 's/'"$funcRegex"'/f:\5/ p'                                     \
@@ -110,14 +117,14 @@ sourcer__build_funcvar_exist_tag(){
 	local nameExist
 	while read -r funvar; do
 		typeInd="${funvar:0:1}"
-		name="${funvar:3}"
+		name="${funvar:2}"
 		nameExist='n'
-		if   [ "$typeInd" = "f" ]; then 
-			declare -f -F "$name" >/dev/null 2>dev/null && nameExist='e'
-		elif [ "$typeInd" = "v" ]; then 
-			declare -p "$name"    >/dev/null 2>dev/null && nameExist='e'
+		if   [[ "$typeInd" = "f" ]]; then 
+			declare -f -F "$name" >/dev/null 2>/dev/null && nameExist='e'
+		elif [[ "$typeInd" = "v" ]]; then 
+			declare -p "$name"    >/dev/null 2>/dev/null && nameExist='e'
 		else
-			sourcer__build_unknown_error "$typeInd" "$funvar"
+			sourcer__build_unknown_type_error "$typeInd" "$funvar"
 			return 1
 		fi
 		echo "$nameExist"':'"$funvar"
@@ -125,10 +132,20 @@ sourcer__build_funcvar_exist_tag(){
 }
 
 
+sourcer__build_unknown_type_error(){
+	local -r typeInd="$1"
+	local -r funvar="$2"
+
+	cat >&2 <<SOURCER__BUILD_UNKNOWN_TYPE_ERROR
+
+Error: Logic problem unknown type: '$typeInd' for funvar: '$funvar' hasn't been defined.
+SOURCER__BUILD_UNKNOWN_TYPE_ERROR
+}
+
 sourcer__build_funcvar_exception_filter(){
 	local	shouldExist="$1"
 
-	if ["$shouldExist" != 'true' ]; then
+	if [[ "$shouldExist" != 'true' ]]; then
 		shouldExist='false'
 	fi
 	local -r shouldExist
@@ -138,9 +155,9 @@ sourcer__build_funcvar_exception_filter(){
 	while read -r funvar; do
 		nameExist=${funvar:0:1}
 		if $shouldExist; then 
-			[ $nameExist = 'e' ] && continue
+			[[ $nameExist = 'e' ]] && continue
 		else
-			[ $nameExist = 'n' ] && continue
+			[[ $nameExist = 'n' ]] && continue
 		fi
 		echo "$funvar"
 	done 
@@ -317,35 +334,13 @@ string: '' to assign a parameter's default value.
 SOURCER__BUILD_HELP
 }
 
-sourcer__build_config_test_match_exception(){
-	sourcer__build_module_get() {
-		local -r sourcerSh="$1"
-		local -r compRoot="$2"
-		local mod
-		for mod in $( "$sourcerSh"  "$compRoot"); do
-			if sourcer__build_funcvar_exception_pipe "$mod" "$sourcer__build_CONFLICT_EXCEPTION"; then
-				return 1
-			fi
-			echo $mod
-		done
-	}
-}
-
-sourcer__build_module_get() {
-	local -r sourcerSh="$1"
-	local -r compRoot="$2"
-	local mod
-	for mod in $( "$sourcerSh" "$compRoot"); do
-		echo $mod
-	done
-}
 
 declare -g sourcer__build_OVERRIDE_IMPLEMENTATION='disable'
 ###############################################################################
 #	All functions and variables that can be overridden should appear above the
 #	'source' statement immediately below. 
 ###############################################################################
-if [ -n "$3" ]; then
+if [[ -n "$3" ]]; then
 	if ! source "$3"; then return 1; fi
 fi
 ###############################################################################
@@ -353,11 +348,11 @@ fi
 #	To do so set sourcer__build_OVERRIDE_IMPLEMENTATION='enable' terminates
 # execution when returning from overridding package.
 ###############################################################################
-if [ "$sourcer__build_OVERRIDE_IMPLEMENTATION" = 'enable' ]; then
+if [[ "$sourcer__build_OVERRIDE_IMPLEMENTATION" = 'enable' ]]; then
 	return
 fi
 
-if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+if [[ "$1" = "-h" ]] || [[ "$1" = "--help" ]]; then
 	sourcer__build_help
 	return
 fi
@@ -370,18 +365,26 @@ fi
 # a function function could be encapsulated in one as long as every globally
 # 'declare'd variable included the -g option: 'declare -g <VariableName>' but
 # one would have to remember to include the -g option, otherwise, one would
-# experience unexpected results, that might consume much time to debug
+# experience unexpected results that might consume much time to debug,
 # as a bash developer's knowledge would suggest the -g option was unnecessary.
 declare -g sourcer__build_SOURCER_FILENAME
 declare -g sourcer__build_SOURCE_COMPONENT_ROOT
-if ! sourcer__build_parameter_check 'sourcer__build_SOURCER_FILENAME' 'sourcer__build_SOURCE_COMPONENT_ROOT'  "$@"; then
+if ! sourcer__build_parameter_check 'sourcer__build_SOURCER_FILENAME' \
+	'sourcer__build_SOURCE_COMPONENT_ROOT'  "$@"; then
 	return 1
 fi
 declare -g sourcer__build_CONFLICT_EXCEPTION=${sourcer__build_CONFLICT_EXCEPTION:-'disable'}
-if	[ "$sourcer__build_CONFLICT_EXCEPTION" = 'enable' ]; then
-	sourcer__build_config_test_match_exception
-fi
 declare -g sourcer__build_MOD
-for sourcer__build_MOD in $( sourcer__build_module_get "$sourcer__build_SOURCER_FILENAME" "$sourcer__build_SOURCE_COMPONENT_ROOT"); do
+if	[[ "$sourcer__build_CONFLICT_EXCEPTION" = 'enable' ]]; then
+	for sourcer__build_MOD in $( "$sourcer__build_SOURCER_FILENAME" \ 		"$sourcer__build_SOURCE_COMPONENT_ROOT"); do
+		if ! sourcer__build_funcvar_exception_pipe "$sourcer__build_MOD"; then
+				return 1
+		fi
 		source "$sourcer__build_MOD"
+	done
+	return
+fi
+
+for sourcer__build_MOD in $( "$sourcer__build_SOURCER_FILENAME" \ 	"$sourcer__build_SOURCE_COMPONENT_ROOT"); do
+	source "$sourcer__build_MOD"
 done
