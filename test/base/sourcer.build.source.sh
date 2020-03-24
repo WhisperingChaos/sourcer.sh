@@ -1,1 +1,1 @@
-../../component/base/sourcer.build.source.sh
+../../component/sourcer_sh/base/sourcer.build.source.sh
