@@ -1,7 +1,5 @@
 #!/bin/bash
 source ./base/sourcer.source.sh
-source ./base/sourcer.source.sh
-
 source ./base/assert.source.sh
 
 test_sourcer__visit_filepath_echo(){
