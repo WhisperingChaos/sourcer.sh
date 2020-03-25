@@ -43,7 +43,7 @@ test_sourcer_noexist_output(){
 
 test_sourcer_build_source_noexist()(
 	assert_output_true test_sourcer_build_source_noexist_output \
-		---	assert_false 'source ./sourcer.build.source_test_sh/base/sourcer.build.source.sh ./ ./sourcer.build.source_test_sh/file/build_source_noexist'
+		---	assert_false 'source ./sourcer.build.source_test_sh/base/sourcer.build.source.sh ./sourcer.build.source_test_sh ./sourcer.build.source_test_sh/file/build_source_noexist'
 
 	assert_return_code_set
 )
@@ -62,7 +62,7 @@ test_sourcer_default_exist()(
 
 
 test_sourcer_build_compose_pkgA_pkgB()(
-	source ./sourcer.build.source_test_sh/base/sourcer.build.source.sh ./ ./sourcer.build.source_test_sh/file/compose_pkgA_pkgB
+	source ./sourcer.build.source_test_sh/base/sourcer.build.source.sh ./sourcer.build.source_test_sh ./sourcer.build.source_test_sh/file/compose_pkgA_pkgB
 	assert_output_true echo "pkgA" --- pkgA_whoami
 	assert_output_true echo "pkgB" --- pkgB_whoami
 
@@ -71,7 +71,7 @@ test_sourcer_build_compose_pkgA_pkgB()(
 
 
 test_sourcer_build_compose_override_pkgA()(
-	source ./sourcer.build.source_test_sh/base/sourcer.build.source.sh ./ ./sourcer.build.source_test_sh/file/build_compose_override_pkgA
+	source ./sourcer.build.source_test_sh/base/sourcer.build.source.sh ./sourcer.build.source_test_sh ./sourcer.build.source_test_sh/file/build_compose_override_pkgA
 	assert_output_true echo "pkgA overridden" --- pkgA_whoami
 
 	assert_return_code_set
@@ -79,7 +79,7 @@ test_sourcer_build_compose_override_pkgA()(
 
 
 test_sourcer_build_compose_override_pkgA_compose_pkgB()(
-	source ./sourcer.build.source_test_sh/base/sourcer.build.source.sh ./ ./sourcer.build.source_test_sh/file/build_compose_override_pkgA_compose_pkgB
+	source ./sourcer.build.source_test_sh/base/sourcer.build.source.sh ./sourcer.build.source_test_sh ./sourcer.build.source_test_sh/file/build_compose_override_pkgA_compose_pkgB
 	assert_output_true echo "pkgA overridden" --- pkgA_whoami
 	assert_output_true echo "pkgB overridden" --- pkgB_whoami
 	assert_true '[ $pkgB_ENVAR_VALUE = 5 ]'
@@ -89,7 +89,7 @@ test_sourcer_build_compose_override_pkgA_compose_pkgB()(
 
 
 test_sourcer_build_compose_override_pkgA_compose_pkgB_1()(
-	source ./sourcer.build.source_test_sh/base/sourcer.build.source.sh ./ ./sourcer.build.source_test_sh/file/build_compose_override_pkgA_compose_pkgB_1
+	source ./sourcer.build.source_test_sh/base/sourcer.build.source.sh ./sourcer.build.source_test_sh ./sourcer.build.source_test_sh/file/build_compose_override_pkgA_compose_pkgB_1
 	assert_output_true echo "pkgA overridden"   --- pkgA_whoami
 	assert_output_true echo "pkgB_1 overridden" --- pkgB_whoami
 	printenv | grep VALUE
@@ -346,8 +346,8 @@ test_sourcer__build(){
 
 test_sourcer__build_exception_testing_disable()(
 
-	assert_output_true --- source ./sourcer.build.source_test_sh/base/sourcer.build.source.sh ./ ./sourcer.build.source_test_sh/file/sourcer__build
-	source ./sourcer.build.source_test_sh/base/sourcer.build.source.sh ./ ./sourcer.build.source_test_sh/file/sourcer__build
+	assert_output_true --- source ./sourcer.build.source_test_sh/base/sourcer.build.source.sh ./sourcer.build.source_test_sh ./sourcer.build.source_test_sh/file/sourcer__build
+	source ./sourcer.build.source_test_sh/base/sourcer.build.source.sh ./sourcer.build.source_test_sh ./sourcer.build.source_test_sh/file/sourcer__build
 	assert_true '[[ $? = 0 ]]'
 	assert_true '[[ "$(pkga_whoami_function_function_define)" = "pkga function_define" ]]'
 	assert_true '[[ "$pkga_var_DECLARE_G" = "-g" ]]'
@@ -363,8 +363,8 @@ test_sourcer__build_exception_testing_disable()(
 test_sourcer__build_exception_testing_enable()(
 
 	declare -g sourcer__build_CONFLICT_EXCEPTION='enable'
-	assert_output_true --- source ./sourcer.build.source_test_sh/base/sourcer.build.source.sh ./ ./sourcer.build.source_test_sh/file/sourcer__build
-	source ./sourcer.build.source_test_sh/base/sourcer.build.source.sh ./ ./sourcer.build.source_test_sh/file/sourcer__build
+	assert_output_true --- source ./sourcer.build.source_test_sh/base/sourcer.build.source.sh ./sourcer.build.source_test_sh ./sourcer.build.source_test_sh/file/sourcer__build
+	source ./sourcer.build.source_test_sh/base/sourcer.build.source.sh ./sourcer.build.source_test_sh ./sourcer.build.source_test_sh/file/sourcer__build
 	assert_true '[[ $? = 0 ]]'
 	assert_true '[[ "$(pkga_whoami_function_function_define)" = "pkga function_define" ]]'
 	assert_true '[[ "$pkga_var_DECLARE_G" = "-g" ]]'
@@ -381,8 +381,8 @@ test_sourcer__build_exception_testing_enable_warning()(
 
 	declare -g sourcer__build_CONFLICT_EXCEPTION='enable'
 	assert_output_true test_sourcer__build_exception_testing_enable_warning_out \
-		--- source ./sourcer.build.source_test_sh/base/sourcer.build.source.sh ./ ./sourcer.build.source_test_sh/file/sourcer__build/warning
-	assert_true 'source ./sourcer.build.source_test_sh/base/sourcer.build.source.sh ./ ./sourcer.build.source_test_sh/file/sourcer__build/warning 2>/dev/null'
+		--- source ./sourcer.build.source_test_sh/base/sourcer.build.source.sh ./sourcer.build.source_test_sh ./sourcer.build.source_test_sh/file/sourcer__build/warning
+	assert_true 'source ./sourcer.build.source_test_sh/base/sourcer.build.source.sh ./sourcer.build.source_test_sh ./sourcer.build.source_test_sh/file/sourcer__build/warning 2>/dev/null'
 
 	assert_return_code_set
 )
@@ -409,8 +409,8 @@ test_sourcer__build_exception_testing_enable_error()(
 	sourcer__build_funcvar_exception_categorize(){ return 1; }
 
 	assert_output_true test_sourcer__build_exception_testing_enable_error_out \
-		--- source ./sourcer.build.source_test_sh/base/sourcer.build.source.sh ./ ./sourcer.build.source_test_sh/file/sourcer__build/error
-	assert_false 'source ./sourcer.build.source_test_sh/base/sourcer.build.source.sh ./ ./sourcer.build.source_test_sh/file/sourcer__build/error 2>/dev/null'
+		--- source ./sourcer.build.source_test_sh/base/sourcer.build.source.sh ./sourcer.build.source_test_sh ./sourcer.build.source_test_sh/file/sourcer__build/error
+	assert_false 'source ./sourcer.build.source_test_sh/base/sourcer.build.source.sh ./sourcer.build.source_test_sh ./sourcer.build.source_test_sh/file/sourcer__build/error 2>/dev/null'
 
 	assert_return_code_set
 )
