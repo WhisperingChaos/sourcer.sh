@@ -11,7 +11,7 @@
 ###############################################################################
 main(){
 	# identify the actual directory location of this executable.  It's aggregate
-	#	source description will always be in ./sourcer_sh/sourcer_sh.source.sh 
+	# source description will always be in ./sourcer_sh/sourcer_sh.source.sh 
 	# relative to its actual directory location.
 	declare -r sourcer__EXECUTABLE_DIR="$(dirname "$(readlink -f "$0")")"
 
@@ -20,5 +20,5 @@ main(){
 	sourcer_compose "$1"
 }
 
-main $@
+main "$@"
 
